@@ -1,10 +1,13 @@
+/** A canonical unsigned decimal string containing a uint256 channel ID. */
+export type ChannelIdJson = string;
+
 export type StateSnapshot = {
   stateRoots: string[];
   storageAddresses: string[];
   storageKeys: StorageKeysJson;
   storageTrieRoots: string[];
   storageTrieDb: StorageTrieDbJson;
-  channelId: number;
+  channelId: ChannelIdJson;
 }
 
 export type StorageKeysJson = string[][]

@@ -12,6 +12,7 @@ import { fromEdwardsToAddress } from "../../crypto/utils.js";
 import { getUserStorageKey } from "../../stateManager/utils.js";
 import { deriveL2KeysFromSignature } from "../wallet/index.js";
 import { ChannelStateConfig } from "./types.js";
+import { parseChannelId } from "../channel/channelId.js";
 
 
 export function createStateManagerOptsFromChannelConfig(
@@ -57,6 +58,7 @@ export function createStateManagerOptsFromChannelConfig(
   }
 
   return {
+    channelId: parseChannelId(config.channelId),
     blockNumber: config.blockNumber,
     storageConfig,
     callCodeAddresses: config.callCodeAddresses.map((str) =>

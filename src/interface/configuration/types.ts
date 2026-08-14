@@ -1,3 +1,5 @@
+import type { ChannelIdJson } from "../channel/types.js";
+
 export type ChannelStateNetwork = 'mainnet' | 'sepolia' | 'anvil';
 
 export type ChannelParticipantConfig = {
@@ -12,6 +14,7 @@ export type ChannelStorageConfig = {
 }
 
 export type ChannelStateConfig = {
+  channelId: ChannelIdJson;
   network: ChannelStateNetwork;
   participants: ChannelParticipantConfig[];
   storageConfigs: ChannelStorageConfig[];

@@ -66,6 +66,8 @@ console.log(senderKeys.publicKey.length, recipientAddress.toString(), !!common)
 
 `StateSnapshot` stores enough data to rebuild both the Ethereum storage trie and the Tokamak storage Merkle tree without replaying slot writes.
 
+- `channelId`
+  Canonical unsigned decimal string in the uint256 range. A string is required so JSON serialization cannot lose precision.
 - `storageAddresses`
   Storage-bearing contract addresses tracked by the snapshot.
 - `storageKeys[i]`
@@ -82,6 +84,8 @@ Important distinction:
   They are not storage slot keys.
 
 This format replaced the older `storageEntries`-based snapshot model. External consumers that construct or validate snapshots must now provide `storageKeys`, `storageTrieRoots`, and `storageTrieDb` consistently for each storage address.
+
+RPC channel configuration uses the same decimal-string boundary. `ChannelStateConfig.channelId` is converted to `bigint` by `createStateManagerOptsFromChannelConfig()`, and direct callers of `createTokamakL2StateManagerFromL1RPC()` provide `TokamakL2StateManagerRPCOpts.channelId` as a `bigint`. Snapshot capture converts the in-memory value back to its exact canonical decimal string.
 
 ## EdDSA Verification Policy
 

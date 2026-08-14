@@ -21,7 +21,9 @@ const main = async () => {
 
   const stateManager = await createTokamakL2StateManagerFromL1RPC(rpcUrl, stateManagerOpts);
   const merkleTrees = stateManager.merkleTrees;
+  const snapshot = await stateManager.captureStateSnapshot();
   console.log('TokamakL2StateManager created.');
+  console.log(`Channel ID: ${snapshot.channelId}`);
   console.log(`Merkle roots: ${merkleTrees.getRoots(stateManagerOpts.storageConfig.map((entry) => entry.address)).map((root) => bigIntToHex(root))}`);
 };
 
