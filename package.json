@@ -1,6 +1,6 @@
 {
   "name": "tokamak-l2js",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "TypeScript toolkit for Tokamak Network Layer-2 ZKP transactions, state management, and Poseidon/EDDSA cryptography.",
   "keywords": [
     "tokamak",
@@ -18,13 +18,13 @@
     "state-manager",
     "merkle-tree"
   ],
-  "homepage": "https://github.com/tokamak-network/TokamakL2JS#readme",
+  "homepage": "https://github.com/JehyukJang/TokamakL2JS#readme",
   "bugs": {
-    "url": "https://github.com/tokamak-network/TokamakL2JS/issues"
+    "url": "https://github.com/JehyukJang/TokamakL2JS/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tokamak-network/TokamakL2JS.git"
+    "url": "git+https://github.com/JehyukJang/TokamakL2JS.git"
   },
   "license": "MIT OR Apache-2.0",
   "author": "Tokamak Network",
@@ -51,6 +51,7 @@
     "build:esm": "tsc -p tsconfig.json",
     "build:cjs": "tsc -p tsconfig.cjs.json && node ./scripts/write-cjs-package.cjs",
     "clean": "rm -rf dist",
+    "test": "npm run build && node --test test/*.test.mjs",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

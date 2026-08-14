@@ -112,9 +112,15 @@ export function eddsaSign(prvKey: bigint, msg: Uint8Array[]): {R: EdwardsPoint, 
 
 export function eddsaVerify(msg: Uint8Array[], pubKey: EdwardsPoint, R: EdwardsPoint, S: bigint): boolean {
     if (S >= jubjub.Point.Fn.ORDER || S < 0n) return false
-    if (pubKey.equals(jubjub.Point.ZERO)) return false
-    if (R.equals(jubjub.Point.ZERO)) return false
     if (msg.length === 0) return false
+    try {
+        pubKey.assertValidity()
+        R.assertValidity()
+    } catch {
+        return false
+    }
+    if (pubKey.isSmallOrder()) return false
+    if (R.equals(jubjub.Point.ZERO)) return false
     const e = bytesToBigInt(poseidon(concatBytes(
         batchBigIntTo32BytesEach(
             R.toAffine().x,
@@ -124,7 +130,8 @@ export function eddsaVerify(msg: Uint8Array[], pubKey: EdwardsPoint, R: EdwardsP
         ),
         ...msg
     ))) % jubjub.Point.Fn.ORDER
-    const LHS = jubjub.Point.BASE.multiply(S)
-    const RHS = pubKey.multiply(e).add(R)
-    return LHS.equals(RHS)
+    const residual = R
+        .add(pubKey.multiplyUnsafe(e))
+        .subtract(jubjub.Point.BASE.multiplyUnsafe(S))
+    return residual.clearCofactor().equals(jubjub.Point.ZERO)
 }

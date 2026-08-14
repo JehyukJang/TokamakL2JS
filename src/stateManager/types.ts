@@ -8,6 +8,8 @@ export type contractCodeForAddress = {
 };
 
 export type TokamakL2StateManagerRPCOpts = {
+    /** Lossless uint256 channel ID used for snapshot capture. */
+    channelId: bigint,
     blockNumber: number,
     callCodeAddresses: Address[],
     // Multiple initStorageKeys for multiple addresses

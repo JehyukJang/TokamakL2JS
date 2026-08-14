@@ -7,6 +7,7 @@ import { RLP } from "@ethereumjs/rlp";
 import { StateSnapshot, StorageKeysJson, StorageTrieDbEntryJson } from "../interface/channel/types.js";
 import { TokamakL2MerkleTrees } from "./TokamakMerkleTrees.js";
 import { _normalizeStorageEntries, assertSnapshotStorageShape, assertStorageEntryCapacity, readStorageEntriesFromStorageTrie } from "./utils.js";
+import { formatChannelId, parseChannelId } from "../interface/channel/channelId.js";
 
 export class TokamakL2StateManager extends MerkleStateManager implements StateManagerInterface {
     private _storageEntries: MerkleTreeMembers | null = null
@@ -14,7 +15,7 @@ export class TokamakL2StateManager extends MerkleStateManager implements StateMa
     private _storageAddresses: Address[] | null = null
     private _storageKeyLeafIndexes: Map<bigint, Map<bigint, number>> | null = null
     private _storageLeafIndexKeys: Map<bigint, Map<number, bigint>> | null = null
-    private _channelId?: number;
+    private _channelId?: bigint;
 
     private _getStorageAddresses(): Address[] {
         if (this._storageAddresses == null) {
@@ -129,10 +130,12 @@ export class TokamakL2StateManager extends MerkleStateManager implements StateMa
     }
 
     public async initTokamakExtendsFromRPC(rpcUrl: string, opts: TokamakL2StateManagerRPCOpts): Promise<void> {
+        formatChannelId(opts.channelId)
         for (const storageConfig of opts.storageConfig) {
             assertStorageEntryCapacity(storageConfig.keyPairs.length, storageConfig.address.toString())
         }
         await this._initializeForAddresses(opts.storageConfig.map((entry) => entry.address))
+        this._channelId = opts.channelId
         const provider = new ethers.JsonRpcProvider(rpcUrl)
         for (const addr of opts.callCodeAddresses) {
             const byteCodeStr = await provider.getCode(addr.toString(), opts.blockNumber)
@@ -175,9 +178,10 @@ export class TokamakL2StateManager extends MerkleStateManager implements StateMa
 
     public async initTokamakExtendsFromSnapshot(snapshot: StateSnapshot, opts: TokamakL2StateManagerSnapshotOpts): Promise<void> {
         assertSnapshotStorageShape(snapshot)
-        this._channelId = snapshot.channelId;
+        const channelId = parseChannelId(snapshot.channelId);
         const storageAddresses = snapshot.storageAddresses.map(addrStr => createAddressFromString(addrStr))
         await this._initializeForAddresses(storageAddresses)
+        this._channelId = channelId
         for (const codeInfo of opts.contractCodes) {
             await this.putCode(codeInfo.address, hexToBytes(codeInfo.code));
         }
@@ -344,7 +348,7 @@ export class TokamakL2StateManager extends MerkleStateManager implements StateMa
         }
 
         return {
-            channelId: this._channelId,
+            channelId: formatChannelId(this._channelId),
             stateRoots,
             storageAddresses: storageAddresses.map(addr => addr.toString()),
             storageKeys,

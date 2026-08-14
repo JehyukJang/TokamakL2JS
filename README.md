@@ -66,6 +66,8 @@ console.log(senderKeys.publicKey.length, recipientAddress.toString(), !!common)
 
 `StateSnapshot` stores enough data to rebuild both the Ethereum storage trie and the Tokamak storage Merkle tree without replaying slot writes.
 
+- `channelId`
+  Canonical unsigned decimal string in the uint256 range. A string is required so JSON serialization cannot lose precision.
 - `storageAddresses`
   Storage-bearing contract addresses tracked by the snapshot.
 - `storageKeys[i]`
@@ -82,6 +84,20 @@ Important distinction:
   They are not storage slot keys.
 
 This format replaced the older `storageEntries`-based snapshot model. External consumers that construct or validate snapshots must now provide `storageKeys`, `storageTrieRoots`, and `storageTrieDb` consistently for each storage address.
+
+RPC channel configuration uses the same decimal-string boundary. `ChannelStateConfig.channelId` is converted to `bigint` by `createStateManagerOptsFromChannelConfig()`, and direct callers of `createTokamakL2StateManagerFromL1RPC()` provide `TokamakL2StateManagerRPCOpts.channelId` as a `bigint`. Snapshot capture converts the in-memory value back to its exact canonical decimal string.
+
+## EdDSA Verification Policy
+
+`eddsaVerify()` enforces the Jubjub cofactor-8 relation:
+
+```text
+[8S]G = [8]R + [e][8]A
+```
+
+The verifier requires `0 <= S < n`, valid on-curve public-key and randomizer points, a public key for which `[8]A` is not the identity, and a non-identity randomizer. Mixed-order public keys and non-identity small-order randomizers are accepted when they satisfy the cofactored equation. This policy intentionally replaces the legacy uncofactored verification equation and must be deployed together with matching zk-EVM circuit artifacts and the Solidity verifier.
+
+Byte-oriented transaction entry points own canonical compressed-point decoding. With the pinned `@noble/curves` version, `getEddsaPublicKey()` rejects non-canonical encodings, invalid points, and negative-zero encodings through `Point.fromBytes()`. `eddsaVerify()` separately validates decoded `EdwardsPoint` objects so direct callers receive `false` for malformed points instead of an exception.
 
 ## API Surface
 

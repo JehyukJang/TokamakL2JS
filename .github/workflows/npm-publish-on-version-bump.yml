@@ -24,12 +24,6 @@ jobs:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Normalize npm config for npm 24
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm config delete always-auth --location=user || true
-
       - name: Detect version increase vs npm registry
         id: version_check
         shell: bash
@@ -127,9 +121,22 @@ jobs:
       - name: Show decision
         run: echo "${{ steps.version_check.outputs.reason }}"
 
+      - name: Set up npm for trusted publishing
+        if: steps.version_check.outputs.publish == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global "npm@^11.5.1"
+          npm config delete always-auth --location=user || true
+          npm --version
+
       - name: Install dependencies
         if: steps.version_check.outputs.publish == 'true'
         run: npm ci
+
+      - name: Test package
+        if: steps.version_check.outputs.publish == 'true'
+        run: npm test
 
       - name: Publish to npm
         if: steps.version_check.outputs.publish == 'true'
