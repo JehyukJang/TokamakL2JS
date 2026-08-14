@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tokamak-network/TokamakL2JS.git"
+    "url": "git+https://github.com/JehyukJang/TokamakL2JS.git"
   },
   "license": "MIT OR Apache-2.0",
   "author": "Tokamak Network",
