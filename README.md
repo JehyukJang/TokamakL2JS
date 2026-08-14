@@ -83,6 +83,18 @@ Important distinction:
 
 This format replaced the older `storageEntries`-based snapshot model. External consumers that construct or validate snapshots must now provide `storageKeys`, `storageTrieRoots`, and `storageTrieDb` consistently for each storage address.
 
+## EdDSA Verification Policy
+
+`eddsaVerify()` enforces the Jubjub cofactor-8 relation:
+
+```text
+[8S]G = [8]R + [e][8]A
+```
+
+The verifier requires `0 <= S < n`, valid on-curve public-key and randomizer points, a public key for which `[8]A` is not the identity, and a non-identity randomizer. Mixed-order public keys and non-identity small-order randomizers are accepted when they satisfy the cofactored equation. This policy intentionally replaces the legacy uncofactored verification equation and must be deployed together with matching zk-EVM circuit artifacts and the Solidity verifier.
+
+Byte-oriented transaction entry points own canonical compressed-point decoding. With the pinned `@noble/curves` version, `getEddsaPublicKey()` rejects non-canonical encodings, invalid points, and negative-zero encodings through `Point.fromBytes()`. `eddsaVerify()` separately validates decoded `EdwardsPoint` objects so direct callers receive `false` for malformed points instead of an exception.
+
 ## API Surface
 
 - Crypto utilities: [`src/crypto/index.ts`](./src/crypto/index.ts)

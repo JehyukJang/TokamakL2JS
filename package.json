@@ -51,6 +51,7 @@
     "build:esm": "tsc -p tsconfig.json",
     "build:cjs": "tsc -p tsconfig.cjs.json && node ./scripts/write-cjs-package.cjs",
     "clean": "rm -rf dist",
+    "test": "npm run build && node --test test/*.test.mjs",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
