@@ -18,9 +18,9 @@
     "state-manager",
     "merkle-tree"
   ],
-  "homepage": "https://github.com/tokamak-network/TokamakL2JS#readme",
+  "homepage": "https://github.com/JehyukJang/TokamakL2JS#readme",
   "bugs": {
-    "url": "https://github.com/tokamak-network/TokamakL2JS/issues"
+    "url": "https://github.com/JehyukJang/TokamakL2JS/issues"
   },
   "repository": {
     "type": "git",
