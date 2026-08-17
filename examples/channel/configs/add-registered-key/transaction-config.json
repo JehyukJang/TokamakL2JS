@@ -3,7 +3,7 @@
   "senderSeed": "Registered sender's L2 wallet",
   "recipientSeed": "New recipient's L2 wallet",
   "userStorageSlot": 0,
-  "txNonce": 0,
+  "channelTransactionIndex": 0,
   "calldata": "0xa9059cbb3a95a18db4c6ebc39cf9c388b6f1479419a149da84fbb57569c9adb8eaba2ff408424758047a3d1b26131430c3d43ecaa8865864bfc33e3a810ee39e6ee6b38b000000000000000000000000000000000000000000000000000000000000000a",
   "function": {
     "selector": "0xa9059cbb",

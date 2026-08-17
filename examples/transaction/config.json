@@ -1,6 +1,6 @@
 {
   "senderSeed": "Sender's L2 wallet",
-  "txNonce": 0,
+  "channelTransactionIndex": 0,
   "calldata": "0xa9059cbb0000000000000000000000009a9e1a51a413659fbab87110f7bc1500cdc859a1000000000000000000000000000000000000000000000004563918244f400000",
   "function": {
     "selector": "0xa9059cbb",

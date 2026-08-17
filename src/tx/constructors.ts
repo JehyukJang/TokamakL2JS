@@ -7,7 +7,7 @@ import { ANY_LARGE_GAS_LIMIT, ANY_LARGE_GAS_PRICE, FUNCTION_INPUT_LENGTH } from 
 import { TxSnapshot } from "../interface/channel/types.js"
 
 const RAW_TX_FIELD_MAX_LENGTHS = {
-  nonce: 32,
+  channelTransactionIndex: 32,
   to: 20,
   data: 4 + FUNCTION_INPUT_LENGTH * 32,
   senderPubKey: 32,
@@ -34,15 +34,13 @@ export function createTokamakL2Tx(txData: TokamakL2TxData, opts: TxOptions): Tok
     // Set the minimum gasLimit to execute VM._runTx
     const gasLimit = txData.gasLimit ?? ANY_LARGE_GAS_LIMIT;
     const gasPrice = txData.gasPrice ?? ANY_LARGE_GAS_PRICE;
-    const tx =  new TokamakL2Tx({...txData, gasLimit, gasPrice}, opts)
-    tx.initUnsafeSenderPubKey(txData.senderPubKey)
-    return tx
+    return new TokamakL2Tx({...txData, gasLimit, gasPrice}, opts)
 }
 
 /**
  * Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
  *
- * Format: `[nonce, to, data, senderPubKey, v, r, s]`
+ * Format: `[channelTransactionIndex, to, data, senderPubKey, v, r, s]`
  */
 export function createTokamakL2TxFromBytesArray(values: Uint8Array[], opts: TxOptions): TokamakL2Tx {
   if ( values.length !== 7 ) {
@@ -51,13 +49,13 @@ export function createTokamakL2TxFromBytesArray(values: Uint8Array[], opts: TxOp
     )
   }
 
-  const [nonce, to, data, senderPubKey, v, r, s] = values
+  const [channelTransactionIndex, to, data, senderPubKey, v, r, s] = values
 
-  const txDataRaw = {nonce, to, data, senderPubKey, v, r, s}
+  const txDataRaw = {channelTransactionIndex, to, data, senderPubKey, v, r, s}
   validateTxDataRawMaxLengths(txDataRaw)
 
   const txDataFormat: TokamakL2TxData = {
-    nonce: bytesToBigInt(nonce),
+    channelTransactionIndex: bytesToBigInt(channelTransactionIndex),
     to: new Address(to),
     data,
     senderPubKey,
@@ -75,7 +73,7 @@ export function createTokamakL2TxFromSnapshot(
 ): TokamakL2Tx {
   return createTokamakL2Tx(
     {
-      nonce: BigInt(snapshot.nonce),
+      channelTransactionIndex: BigInt(snapshot.channelTransactionIndex),
       to: new Address(hexToBytes(addHexPrefix(snapshot.to))),
       data: hexToBytes(addHexPrefix(snapshot.data)),
       senderPubKey: hexToBytes(addHexPrefix(snapshot.senderPubKey)),
@@ -90,7 +88,7 @@ export function createTokamakL2TxFromSnapshot(
 /**
  * Instantiate a transaction from a RLP serialized tx.
  *
- * Format: `rlp([nonce, to, data, senderPubKey, v, r, s])`
+ * Format: `rlp([channelTransactionIndex, to, data, senderPubKey, v, r, s])`
  */
 export function createTokamakL2TxFromRLP(serialized: Uint8Array, opts: TxOptions): TokamakL2Tx {
   const values = RLP.decode(serialized)

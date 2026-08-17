@@ -299,7 +299,7 @@ test('TokamakL2Tx verification uses the cofactor-8 verifier', () => {
   const data = new Uint8Array(4 + FUNCTION_INPUT_LENGTH * 32)
   data.set([0xa9, 0x05, 0x9c, 0xbb])
   const unsigned = createTokamakL2Tx({
-    nonce: 1n,
+    channelTransactionIndex: 1n,
     to: new Address(toBytesBE(0x1234n, 20)),
     data,
     senderPubKey: publicKey.toBytes(),

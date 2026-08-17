@@ -27,7 +27,7 @@ export type StorageEntryJson = {
 export type StorageEntriesJson = StorageEntryJson[][]
 
 export type TxSnapshot = {
-  nonce: number;
+  channelTransactionIndex: number;
   to: string;
   data: string;
   senderPubKey: string;

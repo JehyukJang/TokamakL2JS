@@ -28,7 +28,7 @@ export type ChannelFunctionConfig = {
 };
 
 export type ChannelTxConfig = {
-  txNonce: number;
+  channelTransactionIndex: number;
   calldata: `0x${string}`;
   function: ChannelFunctionConfig;
 };

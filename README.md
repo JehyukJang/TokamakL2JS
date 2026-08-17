@@ -87,6 +87,27 @@ This format replaced the older `storageEntries`-based snapshot model. External c
 
 RPC channel configuration uses the same decimal-string boundary. `ChannelStateConfig.channelId` is converted to `bigint` by `createStateManagerOptsFromChannelConfig()`, and direct callers of `createTokamakL2StateManagerFromL1RPC()` provide `TokamakL2StateManagerRPCOpts.channelId` as a `bigint`. Snapshot capture converts the in-memory value back to its exact canonical decimal string.
 
+## Channel Transaction Index
+
+Tokamak transactions use `channelTransactionIndex` as the first signed message word. The value is
+assigned for the channel as a whole and is not an Ethereum sender-account nonce. A wallet should
+read the current value from the channel manager and provide it when constructing the transaction:
+
+```ts
+const unsignedTx = createTokamakL2Tx({
+  channelTransactionIndex,
+  to,
+  data,
+  senderPubKey,
+}, { common })
+```
+
+This API is a clean break: `nonce` and `txNonce` are not accepted as aliases. The serialized layout
+remains `rlp([channelTransactionIndex, to, data, senderPubKey, v, r, s])`, so renaming the first
+field does not change its byte position or encoding. Supported EthereumJS execution paths must use
+`skipNonce: true`; the channel manager, proof system, and verifier contract are responsible for
+publishing, checking, and consuming the channel transaction index.
+
 ## EdDSA Verification Policy
 
 `eddsaVerify()` enforces the Jubjub cofactor-8 relation:
