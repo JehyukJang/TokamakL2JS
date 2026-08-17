@@ -1,22 +1,47 @@
 import { Address, bigIntToBytes, bigIntToHex, bytesToBigInt, bytesToHex, setLengthLeft, bigIntToUnpaddedBytes, unpadBytes, concatBytes, equalsBytes } from "@ethereumjs/util"
-import { LegacyTx, TransactionInterface, TransactionType, TxValuesArray as AllTypesTxValuesArray, createLegacyTx } from '@ethereumjs/tx'
-import { EthereumJSErrorWithoutCode, RLP } from "@ethereumjs/rlp"
+import { LegacyTx, LegacyTxData, TransactionInterface, TransactionType, TxOptions, TxValuesArray as AllTypesTxValuesArray } from '@ethereumjs/tx'
+import { RLP } from "@ethereumjs/rlp"
 import { jubjub } from "@noble/curves/misc.js"
 import { EdwardsPoint } from "@noble/curves/abstract/edwards.js"
 import { eddsaSign, eddsaVerify, getEddsaPublicKey } from "../crypto/index.js"
 import { FUNCTION_INPUT_LENGTH } from "../interface/params/index.js"
 import { TxSnapshot } from "../interface/channel/types.js"
 import { fromEdwardsToAddress } from "../crypto/utils.js"
+import { TokamakL2TxData } from "./types.js"
 
 // LegacyTx prohibits to add new members for extension. Bypassing this problem by the follow:
 const _unsafeSenderPubKeyStorage = new WeakMap<TokamakL2Tx, Uint8Array>();
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.Legacy]
+
+function toLegacyTxData(txData: TokamakL2TxData): LegacyTxData {
+    if (Object.prototype.hasOwnProperty.call(txData, 'nonce')) {
+        throw new Error("'nonce' is no longer accepted; use 'channelTransactionIndex'")
+    }
+    if (!Object.prototype.hasOwnProperty.call(txData, 'channelTransactionIndex')) {
+        throw new Error("Required 'channelTransactionIndex'")
+    }
+    if (typeof txData.channelTransactionIndex !== 'bigint') {
+        throw new Error("'channelTransactionIndex' must be a bigint")
+    }
+
+    const { channelTransactionIndex, senderPubKey: _senderPubKey, ...legacyTxData } = txData
+    return { ...legacyTxData, nonce: channelTransactionIndex }
+}
 
 export class TokamakL2Tx extends LegacyTx implements TransactionInterface<typeof TransactionType.Legacy> {
     declare readonly to: Address
     // v: public key in bytes form
     // r: randomizer in bytes form
     // s: The EDDSA signature (in JUBJUB scalar field)
+
+    constructor(txData: TokamakL2TxData, opts: TxOptions = {}) {
+        super(toLegacyTxData(txData), opts)
+        this.initUnsafeSenderPubKey(txData.senderPubKey)
+    }
+
+    get channelTransactionIndex(): bigint {
+        return this.nonce
+    }
 
     initUnsafeSenderPubKey(key: Uint8Array): void {
         if (_unsafeSenderPubKeyStorage.has(this)) {
@@ -65,7 +90,7 @@ export class TokamakL2Tx extends LegacyTx implements TransactionInterface<typeof
 
     override getMessageToSign(): Uint8Array[] {
         const messageRaw: Uint8Array[] = [
-            bigIntToUnpaddedBytes(this.nonce),
+            bigIntToUnpaddedBytes(this.channelTransactionIndex),
             this.to.bytes,
             this.getFunctionSelector(),
         ]
@@ -110,9 +135,10 @@ export class TokamakL2Tx extends LegacyTx implements TransactionInterface<typeof
 
         const opts = { ...this.txOptions, common: this.common }
         const tx = new TokamakL2Tx({
-                nonce: this.nonce,
+                channelTransactionIndex: this.channelTransactionIndex,
                 to: this.to,
                 data: this.data,
+                senderPubKey: this.senderPubKeyUnsafe,
                 v: 27n,
                 r: rBigint,
                 s: sBigint,
@@ -121,13 +147,12 @@ export class TokamakL2Tx extends LegacyTx implements TransactionInterface<typeof
             }, 
             opts
         );
-        tx.initUnsafeSenderPubKey(this.senderPubKeyUnsafe);
         return tx
     }
 
     override raw(): TxValuesArray {
         return [
-            bigIntToUnpaddedBytes(this.nonce),
+            bigIntToUnpaddedBytes(this.channelTransactionIndex),
             this.to.bytes,
             this.data,
             this.getSenderPublicKey(),
@@ -139,7 +164,7 @@ export class TokamakL2Tx extends LegacyTx implements TransactionInterface<typeof
 
     captureTxSnapshot(): TxSnapshot {
         return {
-            nonce: Number(this.nonce),
+            channelTransactionIndex: Number(this.channelTransactionIndex),
             to: bytesToHex(this.to.bytes),
             data: bytesToHex(this.data),
             senderPubKey: bytesToHex(this.getSenderPublicKey()),

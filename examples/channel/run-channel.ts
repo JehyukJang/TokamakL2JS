@@ -31,7 +31,7 @@ type ChannelTransactionConfig = {
   senderSeed: string;
   recipientSeed: string;
   userStorageSlot: number;
-  txNonce: number;
+  channelTransactionIndex: number;
   calldata: `0x${string}`;
   function: {
     selector: `0x${string}`;
@@ -145,7 +145,7 @@ const main = async () => {
 
   const tx = createTokamakL2Tx(
     {
-      nonce: BigInt(transactionConfig.txNonce),
+      channelTransactionIndex: BigInt(transactionConfig.channelTransactionIndex),
       to: contractAddress,
       data: hexToBytes(transactionConfig.calldata),
       senderPubKey: senderKeys.publicKey,
@@ -167,6 +167,7 @@ const main = async () => {
   const txResult = await runTx(vm, {
     block,
     tx,
+    skipNonce: true,
     skipBalance: true,
     skipBlockGasLimitValidation: true,
     skipHardForkValidation: true,

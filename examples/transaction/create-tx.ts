@@ -18,7 +18,7 @@ import {
 
 type TxConfig = {
   senderSeed: string;
-  txNonce: bigint;
+  channelTransactionIndex: bigint;
   calldata: `0x${string}`;
   function: {
     selector: `0x${string}`;
@@ -47,7 +47,7 @@ const main = async () => {
   const common = createTokamakL2Common();
 
   const txData: TokamakL2TxData = {
-    nonce: config.txNonce,
+    channelTransactionIndex: config.channelTransactionIndex,
     to: createAddressFromString(config.function.entryContractAddress),
     data: hexToBytes(config.calldata),
     senderPubKey: senderKeys.publicKey,
